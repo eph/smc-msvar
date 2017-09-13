@@ -1,0 +1,4 @@
+*.pyc
+*.json
+smc_msvar/_fortress_tmp
+smc_msvar/_fortress_tmp/*

@@ -14,7 +14,7 @@ Installation + Usage
 
 2. Install the and activate msvar environment 
    ```sh
-   conda create env -f env.yaml
+   conda env create -f env.yaml
    source activate msvar
    ```
 
@@ -22,5 +22,3 @@ Installation + Usage
    ```sh
    python create_models.py [-m {1,2}] [-v {1,2,3,4,5}] {swz,rfb,rfb-hier}
    ```
-
-
