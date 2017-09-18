@@ -96,43 +96,43 @@ contains
   end subroutine test_swzm1v2
 
 
-  subroutine test_rfb
+  ! subroutine test_rfb
 
-    use model_rfbm1v1_t, only: model
+  !   use model_rfbm1v1_t, only: model
 
-    real(wp) :: p0(54)
-    type(model) :: rfb
+  !   real(wp) :: p0(54)
+  !   type(model) :: rfb
 
-    rfb = model()
+  !   rfb = model()
 
-    p0 = [-142.2253601596538_wp, -1.49729668218543_wp, -102.4730988377744_wp, -21.684609763784866_wp, -36.553923326408594_wp, 122.85014572464739_wp, -167.69243008534932_wp, -23.571986788112017_wp, -3.898322694372122_wp, 27.0976539288588_wp, 29.255126596177707_wp, 40.80002484452384_wp, -3.786474083534311_wp, -2.450025466546461_wp, -37.89924090238382_wp, -22.19211415743412_wp, 5.818583583883852_wp, 29.444476870060292_wp, 33.22889944891084_wp, -9.563580689223905_wp, -23.455050114439167_wp, -0.0743053131946391_wp, -16.15327192163147_wp, -53.65545897386337_wp, -6.398652148439028_wp, -3.8037320101941985_wp, -5.328659187735242_wp, 5.923710748485433_wp, 10.418276258302427_wp, -21.276867069842694_wp, 1.5191645929354272_wp, -3.7416195393165808_wp, -12.066394499603732_wp, -6.508970318046397_wp, -2.136927291132539_wp, -5.500462913044265_wp, 3.284946481813498_wp, -0.1694919064208663_wp, 11.140861271165333_wp, -4.52463893172639_wp, 112.44280945817403_wp, 21.2291208098362_wp, 14.54251936535313_wp, -40.99168508919068_wp, -44.152753899454446_wp, -5.154880565754422_wp, 41.36938990053708_wp, -15.27547627190866_wp, -18.559002398092186_wp, 13.308939318093996_wp, 7.48400988676366_wp, -1.16873534594915_wp, -15.829352065747853_wp, -0.0625947722115772_wp]
+  !   p0 = [-142.2253601596538_wp, -1.49729668218543_wp, -102.4730988377744_wp, -21.684609763784866_wp, -36.553923326408594_wp, 122.85014572464739_wp, -167.69243008534932_wp, -23.571986788112017_wp, -3.898322694372122_wp, 27.0976539288588_wp, 29.255126596177707_wp, 40.80002484452384_wp, -3.786474083534311_wp, -2.450025466546461_wp, -37.89924090238382_wp, -22.19211415743412_wp, 5.818583583883852_wp, 29.444476870060292_wp, 33.22889944891084_wp, -9.563580689223905_wp, -23.455050114439167_wp, -0.0743053131946391_wp, -16.15327192163147_wp, -53.65545897386337_wp, -6.398652148439028_wp, -3.8037320101941985_wp, -5.328659187735242_wp, 5.923710748485433_wp, 10.418276258302427_wp, -21.276867069842694_wp, 1.5191645929354272_wp, -3.7416195393165808_wp, -12.066394499603732_wp, -6.508970318046397_wp, -2.136927291132539_wp, -5.500462913044265_wp, 3.284946481813498_wp, -0.1694919064208663_wp, 11.140861271165333_wp, -4.52463893172639_wp, 112.44280945817403_wp, 21.2291208098362_wp, 14.54251936535313_wp, -40.99168508919068_wp, -44.152753899454446_wp, -5.154880565754422_wp, 41.36938990053708_wp, -15.27547627190866_wp, -18.559002398092186_wp, 13.308939318093996_wp, 7.48400988676366_wp, -1.16873534594915_wp, -15.829352065747853_wp, -0.0625947722115772_wp]
 
-    call assert_equals(54, rfb%npara)
-    call assert_equals(183, rfb%T)
-    call assert_equals(3, rfb%nobs)
-    call assert_equals(5, rfb%p)
-    call assert_equals(1, rfb%ns_mu)
-    call assert_equals(1, rfb%ns_var)
-    call assert_equals(1, rfb%ns)
+  !   call assert_equals(54, rfb%npara)
+  !   call assert_equals(183, rfb%T)
+  !   call assert_equals(3, rfb%nobs)
+  !   call assert_equals(5, rfb%p)
+  !   call assert_equals(1, rfb%ns_mu)
+  !   call assert_equals(1, rfb%ns_var)
+  !   call assert_equals(1, rfb%ns)
 
-    ! likelihood
+  !   ! likelihood
 
-    ! prior 
-    call assert_equals(?, rfb%lik(p0))
-    call assert_equals(?, rfb%prior%logpdf(p0))
+  !   ! prior 
+  !   call assert_equals(?, rfb%lik(p0))
+  !   call assert_equals(?, rfb%prior%logpdf(p0))
 
 
-  end subroutine test_rfb
+  ! end subroutine test_rfb
 
-  subroutine test_rfb_hier
+  ! subroutine test_rfb_hier
 
-    use model_rfb_hierm1v1_t, only: model
+  !   use model_rfb_hierm1v1_t, only: model
 
-    type(model) :: rfb_hier
-    real(wp) :: p0(?)
+  !   type(model) :: rfb_hier
+  !   real(wp) :: p0(?)
 
-    p0 = [?]
+  !   p0 = [?]
 
-  end subroutine test_rfb_hier
+  ! end subroutine test_rfb_hier
 
 end module test_msvar

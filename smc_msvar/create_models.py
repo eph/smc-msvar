@@ -56,8 +56,12 @@ if args.prior == 'swz':
                                  mufile='mu.txt', sigmafile='sigma.txt',
                                  **other_parameters)
 
-    
-    smc = make_smc(modelfile, other_files=other_files, output_directory=args.output_dir)
+
+    lib_path = '/home/eherbst/anaconda3/lib'
+    inc_path = '/home/eherbst/anaconda3/include'
+    smc = make_smc(modelfile, other_files=other_files, output_directory=args.output_dir,
+                   lib_path=lib_path, inc_path=inc_path)
+
 
 
 
@@ -81,13 +85,47 @@ elif args.prior == 'rfb':
     modelfile = open('ms_minnpr.f90','r').read()
     modelfile = modelfile.format(data=dat, prior=args.prior,
                                  m=args.m, v=args.v, p=rfb.p,
-                                 cons=rfb.cons, nA=6, nF=48,
+                                 cons=rfb.cons, nA=6, nF=rfb.ny**2*rfb.p+rfb.ny,
                                  mufile='mu.txt', sigmafile='sigma.txt',
                                  **other_parameters)
-
-    smc = make_smc(modelfile, other_files=other_files, output_directory=args.output_dir)
+    lib_path = '/home/eherbst/anaconda3/lib'
+    include_path = '/home/eherbst/anaconda3/include'
+    smc = make_smc(modelfile, other_files=other_files, output_directory=args.output_dir,
+                   lib_path=lib_path, inc_path=include_path)
 elif args.prior == 'rfb-hier':
-    pass
+    print('You`ve selected the RFB-hier prior') 
+    lam = [1.0, 1.2, 1.0, 1.0, 1.0, 1.0]
+    rfb = MinnesotaPrior([],lam, presample_moments=premom, p=5)
+
+    other_files = {'data.txt': dat,
+                   'qmean.txt': qmean,
+                   'qvar.txt': qvar}
+
+
+    other_parameters = {'lam{:d}'.format(d+1): '{}_wp'.format(val) for d, val in enumerate(lam)}
+    other_parameters['tau'] = other_parameters['lam6']
+    other_parameters['lamxx'] = '0.1_wp'
+    other_parameters['ybar'] = '[-0.0010_wp, 0.0122_wp, 0.0343_wp]' 
+    other_parameters['sbar'] = '[ 0.0076_wp, 0.0110_wp, 0.0090_wp]'
+    other_parameters['ybar_mean'] = '[0.00_wp, 0.00_wp, 0.00_wp]'
+    other_parameters['ybar_std'] = '[0.10_wp, 0.10_wp, 0.10_wp]'
+
+    other_parameters['sbar_s'] = '[0.00658_wp, 0.009526_wp, 0.007794_wp]'
+    other_parameters['sbar_nu'] = '[3.00_wp, 3.00_wp, 3.00_wp]'
+    other_parameters['hyper_lam_theta'] = '2.61_wp'
+    other_parameters['hyper_lam_k'] = '0.61_wp'
+
+    modelfile = open('ms_minnpr.f90','r').read()
+    modelfile = modelfile.format(data=dat, prior=args.prior,
+                                 m=args.m, v=args.v, p=rfb.p,
+                                 cons=rfb.cons, nA=6, nF=rfb.ny**2*rfb.p+rfb.ny*rfb.cons,
+                                 mufile='mu.txt', sigmafile='sigma.txt',
+                                 **other_parameters)
+    lib_path = '/home/eherbst/anaconda3/lib'
+    include_path = '/home/eherbst/anaconda3/include'
+    smc = make_smc(modelfile, other_files=other_files, output_directory=args.output_dir,
+                   lib_path=lib_path, inc_path=include_path)
+
 
 if args.run:
     results = smc.run(npart=2000, bend=4.0, nphi=2000, nblocks=12,
