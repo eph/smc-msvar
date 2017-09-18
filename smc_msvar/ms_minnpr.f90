@@ -77,9 +77,7 @@ module msvar_prior
   !------------------------------------------------------------
   type, public, extends(fortress_abstract_prior) :: MSVARPrior
 
-     character(len=144) :: prior_type
      integer :: ns_mu, ns_var, nobs, ns, nA, nF, p, constant
-
      
      class(prior_set), allocatable, dimension(:) :: coeff_prior
 
@@ -433,7 +431,6 @@ contains
        rvs_result = use_rng%gamma_rvs(1,3,self%lamxx_theta, self%lamxx_k)
        lamxx = rvs_result(1,1)
 
-
        do j = 1, self%nobs
           rvs_result = use_rng%norm_rvs(1,3,mu=self%ybar_mean(j), sig=self%ybar_std(j))
           ybar(j) = rvs_result(1,1)
@@ -518,9 +515,14 @@ contains
 
   type(MSVARPrior) function new_MSVARPrior() result(self)
 
-    integer :: ns_mu, ns_var
-
-    integer :: npara, nA, nF, i
+    !ns_mu, ns_var, p, nA, nF, &
+    !   mu_coeff_prior, xi_prior_k, xi_prior_theta
+    ! integer, intent(in) :: ns_mu, ns_var, nA, nF
+    ! class(fortress_abstract_prior), intent(inout) :: mu_coeff_prior
+    ! real(wp), intent(in) : xi_prior_k, xi_prior_theta
+    ! real(wp), intent(in) :: Q_prior_mu(ns_mu, ns_mu), Q_prior_var(ns_var, ns_var)
+    
+    integer :: i, npara
     character(len=144) :: mufile, sigmafile, qmufile, qvarfile, ximufile, xistdfile
 
     class(fortress_abstract_prior), allocatable, target :: prior
@@ -532,8 +534,7 @@ contains
     self%ns_var = {v}
     
     self%ns = self%ns_mu * self%ns_var
-    self%nobs = 3
-    self%prior_type = '{prior}'
+    self%nobs = {data.shape[1]}
     self%p = {p}
     self%constant = {cons:d}
     self%nA = {nA}
@@ -542,49 +543,15 @@ contains
     npara = 0 
     allocate(self%coeff_prior(self%ns_mu))
 
-    if (self%prior_type=='swz') then 
-       mufile = '{mufile}'
-       sigmafile = '{sigmafile}'
-       do i = 1, self%ns_mu
-          allocate(self%coeff_prior(i)%pr, source=SimsZhaSVARPrior(self%nA+self%nF, mufile, sigmafile))
-          npara = npara + self%coeff_prior(i)%pr%npara
-       end do
-    elseif ((self%prior_type=='rfb') .or. (self%prior_type=='rfb-hier')) then
-
-
-       if (self%prior_type=='rfb') then
-          do i = 1,self%ns_mu
-             allocate(self%coeff_prior(i)%pr, &
-                  source=SVARMinnesotaPrior(self%nobs, self%p, self%constant, &
-                  {lam1}, {lam2}, {lam3}, {lam4}, {lam5}, {lamxx}, &
-                  {tau}, {ybar}, {sbar}))
-
-             npara = npara + self%coeff_prior(i)%pr%npara
-          end do
-       else
-          do i = 1,self%ns_mu
-             allocate(self%coeff_prior(i)%pr, &
-                      source=SVARMinnesotaPriorHyper(self%nobs, self%p, self%constant, &
-                      {lam2}, {lam3}, {tau}, {hyper_lam_theta}, {hyper_lam_k},&
-                      {hyper_lam_theta}, {hyper_lam_k}, &
-                             {ybar_mean}, {ybar_std}, &
-             {sbar_s}, {sbar_nu}))
-
-             npara = npara + self%coeff_prior(i)%pr%npara
-          end do
-
-       end if 
-    end if
+    {mu_prior}
 
     if (self%ns_var > 1) then
        allocate(self%priXi_mean((self%ns_var-1)*self%nobs))
        allocate(self%priXi_std((self%ns_var-1)*self%nobs))
 
-       self%priXi_mean = 1.0d0
-       self%priXi_std = 1.0d0
+       self%priXi_mean = 1.0d0 !xi_prior_theta
+       self%priXi_std = 1.0d0 !xi_prior_k
 
-       !call read_array_from_file(ximufile, self%priXi_mean)
-       !call read_array_from_file(xistdfile, self%priXi_std)
     end if
     npara = npara + self%nobs * (self%ns_var-1)
 

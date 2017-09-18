@@ -1,9 +1,12 @@
 import argparse, numpy as np, pandas as p
 from pyvar import MinnesotaPrior, SimsZhaSVARPrior
 from fortress import make_smc
-from collections import defaultdict
 
-parser = argparse.ArgumentParser(description='Program for estimating MS-VARs via FORTRESS')
+#from collections import defaultdict
+
+parser = argparse.ArgumentParser(description=
+                                 'Replication of Boganni-Herbst 2017.')
+
 parser.add_argument('prior', choices=['swz','rfb','rfb-hier'],
                     help='prior selection')
 parser.add_argument('-m', type=int, choices=[1,2], default=1,
@@ -16,7 +19,6 @@ parser.add_argument('--output-dir', default='_fortress_tmp',
                     help='directory for output')
 
 args = parser.parse_args()
-
 
 datafile = 'sz_2008_joe_data.csv'
 dat = p.read_csv(datafile, names=['xgap','infl','int'])
@@ -31,7 +33,6 @@ qmean[qmean==0] = 1
 qvar = 5.667*np.eye((args.v))
 qvar[qvar==0] = 1
 
-other_parameters = defaultdict(lambda: '-1.0d0')
 
 if args.prior == 'swz':
     print('You`ve selected the SWZ prior')
@@ -44,25 +45,26 @@ if args.prior == 'swz':
                    'qmean.txt': qmean,
                    'qvar.txt': qvar}
 
-    [other_parameters[x] for x in
-     ['lam1','lam2','lam3','lam4','lam5','lamxx','tau']]
-    other_parameters['ybar'] = '[-1.0d0, -1.0d0, -1.0d0]'
-    other_parameters['sbar'] = '[-1.0d0, -1.0d0, -1.0d0]'
+    mu_prior = """
+       mufile = '{mufile}'
+       sigmafile = '{sigmafile}'
+       do i = 1, self%ns_mu
+          allocate(self%coeff_prior(i)%pr, source=SimsZhaSVARPrior(self%nA+self%nF, mufile, sigmafile))
+          npara = npara + self%coeff_prior(i)%pr%npara
+       end do
+    """.format(mufile='mu.txt', sigmafile='sigma.txt')
 
     modelfile = open('ms_minnpr.f90','r').read()
     modelfile = modelfile.format(data=dat, prior=args.prior,
                                  m=args.m, v=args.v, p=swz.p,
                                  cons=swz.cons, nA=6, nF=48,
-                                 mufile='mu.txt', sigmafile='sigma.txt',
-                                 **other_parameters)
+                                 mu_prior=mu_prior)
 
 
     lib_path = '/home/eherbst/anaconda3/lib'
     inc_path = '/home/eherbst/anaconda3/include'
     smc = make_smc(modelfile, other_files=other_files, output_directory=args.output_dir,
                    lib_path=lib_path, inc_path=inc_path)
-
-
 
 
 elif args.prior == 'rfb':
@@ -75,12 +77,23 @@ elif args.prior == 'rfb':
                    'qmean.txt': qmean,
                    'qvar.txt': qvar}
 
-
+    
     other_parameters = {'lam{:d}'.format(d+1): '{}_wp'.format(val) for d, val in enumerate(lam)}
     other_parameters['tau'] = other_parameters['lam6']
     other_parameters['lamxx'] = '0.1_wp'
     other_parameters['ybar'] = '[-0.0010_wp, 0.0122_wp, 0.0343_wp]' 
     other_parameters['sbar'] = '[ 0.0076_wp, 0.0110_wp, 0.0090_wp]'
+
+    mu_prior = """
+          do i = 1,self%ns_mu
+             allocate(self%coeff_prior(i)%pr, &
+                  source=SVARMinnesotaPrior(self%nobs, self%p, self%constant, &
+                  {lam1}, {lam2}, {lam3}, {lam4}, {lam5}, {lamxx}, &
+                  {tau}, {ybar}, {sbar}))
+
+             npara = npara + self%coeff_prior(i)%pr%npara
+          end do
+    """.format(**other_parameters)
 
     modelfile = open('ms_minnpr.f90','r').read()
     modelfile = modelfile.format(data=dat, prior=args.prior,
@@ -90,6 +103,7 @@ elif args.prior == 'rfb':
                                  **other_parameters)
     lib_path = '/home/eherbst/anaconda3/lib'
     include_path = '/home/eherbst/anaconda3/include'
+
     smc = make_smc(modelfile, other_files=other_files, output_directory=args.output_dir,
                    lib_path=lib_path, inc_path=include_path)
 elif args.prior == 'rfb-hier':
@@ -115,12 +129,24 @@ elif args.prior == 'rfb-hier':
     other_parameters['hyper_lam_theta'] = '2.61_wp'
     other_parameters['hyper_lam_k'] = '0.61_wp'
 
+    mu_prior = """
+          do i = 1,self%ns_mu
+             allocate(self%coeff_prior(i)%pr, &
+                      source=SVARMinnesotaPriorHyper(self%nobs, self%p, self%constant, &
+                      {lam2}, {lam3}, {tau}, {hyper_lam_theta}, {hyper_lam_k},&
+                      {hyper_lam_theta}, {hyper_lam_k}, &
+                             {ybar_mean}, {ybar_std}, &
+             {sbar_s}, {sbar_nu}))
+
+             npara = npara + self%coeff_prior(i)%pr%npara
+          end do
+    """.format(**other_parameters)
+
     modelfile = open('ms_minnpr.f90','r').read()
     modelfile = modelfile.format(data=dat, prior=args.prior,
                                  m=args.m, v=args.v, p=rfb.p,
                                  cons=rfb.cons, nA=6, nF=rfb.ny**2*rfb.p+rfb.ny*rfb.cons,
-                                 mufile='mu.txt', sigmafile='sigma.txt',
-                                 **other_parameters)
+                                 mu_prior=mu_prior)
     lib_path = '/home/eherbst/anaconda3/lib'
     include_path = '/home/eherbst/anaconda3/include'
     smc = make_smc(modelfile, other_files=other_files, output_directory=args.output_dir,
