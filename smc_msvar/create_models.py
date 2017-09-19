@@ -95,12 +95,18 @@ elif args.prior == 'rfb':
           end do
     """.format(**other_parameters)
 
+    other_files = {'data.txt': dat,
+                   'qmean.txt': qmean,
+                   'qvar.txt': qvar,
+                   'Dnplus.txt': 'Dnplus.txt',
+                   'M.txt': 'M.txt',
+                   'Nn.txt': 'Nn.txt'}
+
     modelfile = open('ms_minnpr.f90','r').read()
     modelfile = modelfile.format(data=dat, prior=args.prior,
                                  m=args.m, v=args.v, p=rfb.p,
                                  cons=rfb.cons, nA=6, nF=rfb.ny**2*rfb.p+rfb.ny,
-                                 mufile='mu.txt', sigmafile='sigma.txt',
-                                 **other_parameters)
+                                 mu_prior=mu_prior)
     lib_path = '/home/eherbst/anaconda3/lib'
     include_path = '/home/eherbst/anaconda3/include'
 
@@ -113,7 +119,10 @@ elif args.prior == 'rfb-hier':
 
     other_files = {'data.txt': dat,
                    'qmean.txt': qmean,
-                   'qvar.txt': qvar}
+                   'qvar.txt': qvar,
+                   'Dnplus.txt': 'Dnplus.txt',
+                   'M.txt': 'M.txt',
+                   'Nn.txt': 'Nn.txt'}
 
 
     other_parameters = {'lam{:d}'.format(d+1): '{}_wp'.format(val) for d, val in enumerate(lam)}
@@ -145,8 +154,7 @@ elif args.prior == 'rfb-hier':
     modelfile = open('ms_minnpr.f90','r').read()
     modelfile = modelfile.format(data=dat, prior=args.prior,
                                  m=args.m, v=args.v, p=rfb.p,
-                                 cons=rfb.cons, nA=6, nF=rfb.ny**2*rfb.p+rfb.ny*rfb.cons,
-                                 mu_prior=mu_prior)
+                                 cons=rfb.cons, nA=6, nF=rfb.ny**2*rfb.p+rfb.ny*rfb.cons, mu_prior=mu_prior)
     lib_path = '/home/eherbst/anaconda3/lib'
     include_path = '/home/eherbst/anaconda3/include'
     smc = make_smc(modelfile, other_files=other_files, output_directory=args.output_dir,
