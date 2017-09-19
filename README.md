@@ -1,11 +1,11 @@
-Companion Code for 
+Companion Code for A SEQUENTIAL MONTE CARLO APPROACH TO INFERENCE IN MULTIPLE-EQUATION MARKOV-SWITCHING MODELS
 ================================================================
-by MARK BOGNANNI and ED HERBST 
+by MARK BOGNANNI and ED HERBST [ed.herbst@gmail.com]
 
 
 Requirements
 ------------
-You need a 64-bit linux installation. 
+You need a 64-bit linux installation, GCC 5+, and MPI.  
 
 
 Installation + Usage
@@ -22,3 +22,7 @@ Installation + Usage
    ```sh
    python create_models.py [-m {1,2}] [-v {1,2,3,4,5}] {swz,rfb,rfb-hier}
    ```
+
+Note
+----
+The code was refactored recently, so there may be bugs.  Please let me know. 
