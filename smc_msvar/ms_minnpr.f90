@@ -122,10 +122,9 @@ contains
 
     allocate(pr%Dnplus(6,9), pr%Nn(9,9), pr%M(9,6))
 
-    dir = '/home/eherbst/Dropbox/var_smc_estimation/replication-code/smc_msvar/'
-    call read_array_from_file(trim(dir)//'_fortress_tmp/Dnplus.txt', pr%Dnplus)
-    call read_array_from_file(trim(dir)//'_fortress_tmp/Nn.txt', pr%Nn)
-    call read_array_from_file(trim(dir)//'_fortress_tmp/M.txt', pr%M)
+    call read_array_from_file('Dnplus.txt', pr%Dnplus)
+    call read_array_from_file('Nn.txt', pr%Nn)
+    call read_array_from_file('M.txt', pr%M)
 
   end function new_SVARMinnesotaPrior
 
@@ -475,7 +474,7 @@ contains
 
     xn = 1.0_wp - sum(x)
 
-    if (xn < 0.0_wp) then
+    if ((xn < 0.0_wp) .or. (xn > 1.0_wp)) then
        logdirichletpdf = -1000000000.0_wp
        return
     end if
@@ -618,14 +617,17 @@ contains
     integer :: i, j, ind0
 
 
-
-    use_rng = fortress_random()
-
+    if (present(seed)) then
+       use_rng = fortress_random(seed=seed)
+    else
+       use_rng = fortress_random()
+    end if
     parasim = 0.0_wp
+
     ind0 = 0
 
     do i = 1, self%ns_mu
-       parasim(ind0+1:ind0+self%coeff_prior(i)%pr%npara, :) = self%coeff_prior(i)%pr%rvs(nsim)
+       parasim(ind0+1:ind0+self%coeff_prior(i)%pr%npara, :) = self%coeff_prior(i)%pr%rvs(nsim, seed=use_rng%seed+25*i)
        ind0 = ind0 + self%coeff_prior(i)%pr%npara
     end do
 
@@ -645,7 +647,7 @@ contains
           do j = 1, nsim
              temp_mu(j, :) = temp_mu(j, :) / sum(temp_mu(j,:))
           end do
-          parasim(ind0+1:ind0+self%ns_mu-1,:) = temp_mu(:, 1:self%ns_mu-1)
+          parasim(ind0+1:ind0+self%ns_mu-1,:) = transpose(temp_mu(:, 1:self%ns_mu-1))
           ind0 = ind0 + self%ns_mu-1
        end do
     end if
